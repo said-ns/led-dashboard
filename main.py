@@ -71,6 +71,8 @@ def main():
             while True:
                 try:
                     ev = events.get_nowait()
+                    print(ev)
+                    mgr.handle(ev)
                 except queue.Empty:
                     break
                 mgr.handle(ev)
