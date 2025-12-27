@@ -4,16 +4,14 @@ import threading
 
 class KY040Input:
     """
-    Reads a KY-040 rotary encoder (CLK/DT) + pushbutton (SW)
-    and emits events into a queue:
-
+    Polling-based KY-040 input:
       ROTATE:      {"type":"ROTATE","delta":+1/-1}
       SHORT_CLICK: {"type":"SHORT_CLICK"}
       LONG_CLICK:  {"type":"LONG_CLICK"}
 
-    Notes:
-    - Uses polling in a background thread (simple + reliable).
-    - Button press type is decided on RELEASE to avoid "short then long" double-firing.
+    Key improvement vs your version:
+    - Proper quadrature decode (CLK/DT) so slow turns register.
+    - Emits exactly 1 ROTATE per detent via steps_per_detent.
     """
 
     def __init__(
@@ -27,8 +25,10 @@ class KY040Input:
         pull_up=True,
         long_press_s: float = 0.60,
         debounce_s: float = 0.03,
-        poll_s: float = 0.001,
+        poll_s: float = 0.0005,          # poll faster for encoders
         invert_direction: bool = False,
+        steps_per_detent: int = 2,        # TRY 2 first; if too sensitive, use 4; if too sluggish, use 1
+        rot_debounce_s: float = 0.0015,   # minimum time between valid quad steps
     ):
         self.gpio = gpio
         self.clk = clk_pin
@@ -41,17 +41,21 @@ class KY040Input:
         self.debounce_s = debounce_s
         self.poll_s = poll_s
         self.invert_direction = invert_direction
+        self.steps_per_detent = max(1, int(steps_per_detent))
+        self.rot_debounce_s = rot_debounce_s
 
         self._stop = threading.Event()
         self._thread = None
 
-        # encoder state
-        self._last_clk = None
+        # rotation state
+        self._last_state = 0
+        self._accum = 0
+        self._last_rot_time = 0.0
 
         # button state
         self._pressed = False
         self._press_time = 0.0
-        self._last_edge = 0.0
+        self._last_btn_edge = 0.0
         self._prev_sw = 1  # pull-up idle HIGH
 
     def start(self):
@@ -63,7 +67,8 @@ class KY040Input:
         g.setup(self.dt,  g.IN, pull_up_down=pud)
         g.setup(self.sw,  g.IN, pull_up_down=pud)
 
-        self._last_clk = g.input(self.clk)
+        # initial states
+        self._last_state = (g.input(self.clk) << 1) | g.input(self.dt)
         self._prev_sw = g.input(self.sw)
 
         self._stop.clear()
@@ -89,36 +94,53 @@ class KY040Input:
     def _run(self):
         g = self.gpio
 
+        # Quadrature transition table
+        # state is 2-bit: (CLK<<1)|DT
+        TRANS = {
+            (0b00, 0b01): +1,
+            (0b01, 0b11): +1,
+            (0b11, 0b10): +1,
+            (0b10, 0b00): +1,
+
+            (0b00, 0b10): -1,
+            (0b10, 0b11): -1,
+            (0b11, 0b01): -1,
+            (0b01, 0b00): -1,
+        }
+
         while not self._stop.is_set():
             now = time.monotonic()
 
             # ---------- ROTATION ----------
-            clk_state = g.input(self.clk)
-            dt_state = g.input(self.dt)
+            state = (g.input(self.clk) << 1) | g.input(self.dt)
+            if state != self._last_state:
+                step = TRANS.get((self._last_state, state), 0)
+                self._last_state = state
 
-            # Detect rising edge on CLK
-            if clk_state != self._last_clk and clk_state == 1:
-                # Direction heuristic:
-                # Often: dt == 0 => CW, dt == 1 => CCW (may vary by wiring)
-                delta = +1 if dt_state == 0 else -1
-                self._emit_rotate(delta)
+                # Filter out super-fast bounce steps
+                if step != 0 and (now - self._last_rot_time) >= self.rot_debounce_s:
+                    self._last_rot_time = now
+                    self._accum += step
 
-            self._last_clk = clk_state
+                    # Emit one event per detent
+                    if self._accum >= self.steps_per_detent:
+                        self._accum = 0
+                        self._emit_rotate(+1)
+                    elif self._accum <= -self.steps_per_detent:
+                        self._accum = 0
+                        self._emit_rotate(-1)
 
             # ---------- BUTTON (SHORT vs LONG) ----------
             sw_state = g.input(self.sw)
 
-            # Edge detect with debounce
-            if sw_state != self._prev_sw and (now - self._last_edge) > self.debounce_s:
-                self._last_edge = now
+            if sw_state != self._prev_sw and (now - self._last_btn_edge) > self.debounce_s:
+                self._last_btn_edge = now
 
                 if sw_state == 0 and not self._pressed:
-                    # PRESS
                     self._pressed = True
                     self._press_time = now
 
                 elif sw_state == 1 and self._pressed:
-                    # RELEASE
                     self._pressed = False
                     held = now - self._press_time
                     if held >= self.long_press_s:
