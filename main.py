@@ -16,8 +16,8 @@ def main():
     # KY-040 pins (BCM numbering)
     # Change these to your wiring
     CLK_PIN = 18
-    DT_PIN  = 25 
-    SW_PIN  = 19
+    DT_PIN  = 19 
+    SW_PIN  = 25
 
     # Matrix options (tune to your setup)
     MATRIX_COLS = 64
