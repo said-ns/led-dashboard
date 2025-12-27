@@ -12,7 +12,7 @@ class PigpioGPIO:
             raise RuntimeError("pigpio daemon not running. Run: sudo systemctl enable --now pigpiod")
 
     def setwarnings(self, flag: bool):
-        pass  # not needed
+        pass
 
     def setmode(self, mode):
         pass  # pigpio uses BCM numbering
@@ -25,6 +25,10 @@ class PigpioGPIO:
             self.pi.set_pull_up_down(pin, pigpio.PUD_DOWN)
         else:
             self.pi.set_pull_up_down(pin, pigpio.PUD_OFF)
+
+    def set_glitch_filter(self, pin, us: int):
+        # Ignore edges shorter than `us` microseconds
+        self.pi.set_glitch_filter(pin, us)
 
     def input(self, pin):
         return self.pi.read(pin)

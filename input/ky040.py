@@ -67,6 +67,11 @@ class KY040Input:
         g.setup(self.dt,  g.IN, pull_up_down=pud)
         g.setup(self.sw,  g.IN, pull_up_down=pud)
 
+        if hasattr(g, "set_glitch_filter"):
+            g.set_glitch_filter(self.clk, 800)   # 0.8ms
+            g.set_glitch_filter(self.dt,  800)
+            g.set_glitch_filter(self.sw, 3000)   # 3ms for button
+
         # initial states
         self._last_state = (g.input(self.clk) << 1) | g.input(self.dt)
         self._prev_sw = g.input(self.sw)
