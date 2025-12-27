@@ -27,7 +27,7 @@ class KY040Input:
         debounce_s: float = 0.03,
         poll_s: float = 0.0005,          # poll faster for encoders
         invert_direction: bool = False,
-        steps_per_detent: int = 1,        # TRY 2 first; if too sensitive, use 4; if too sluggish, use 1
+        steps_per_detent: int = 4,        # TRY 2 first; if too sensitive, use 4; if too sluggish, use 1
         rot_debounce_s: float = 0.0005,   # minimum time between valid quad steps
     ):
         self.gpio = gpio
