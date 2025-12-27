@@ -15,7 +15,7 @@ class MatrixDisplay:
         parallel=1,
         brightness=60,
         gpio_mapping="adafruit-hat",
-        panel_type=None,          # e.g. "FM6126A" if needed
+        panel_type="FM6126A",          # e.g. "FM6126A" if needed
         slowdown_gpio=4,
         pwm_bits=None,
         pwm_lsb_nanoseconds=None,
