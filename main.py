@@ -56,7 +56,7 @@ def main():
         poll_s=0.001,
         invert_direction=False,  # set True if rotation direction feels backwards
     )
-    #encoder.start()
+    encoder.start()
 
     canvas = display.create_canvas()
     last = time.monotonic()
@@ -72,7 +72,6 @@ def main():
                 try:
                     ev = events.get_nowait()
                     print(ev)
-                    mgr.handle(ev)
                 except queue.Empty:
                     break
                 mgr.handle(ev)
@@ -87,7 +86,7 @@ def main():
             # ~60 FPS cap
             time.sleep(1 / 60)
     finally:
-        #encoder.stop()
+        encoder.stop()
         GPIO.cleanup()
 
 

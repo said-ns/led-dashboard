@@ -28,7 +28,7 @@ class KY040Input:
         poll_s: float = 0.0005,          # poll faster for encoders
         invert_direction: bool = False,
         steps_per_detent: int = 2,        # TRY 2 first; if too sensitive, use 4; if too sluggish, use 1
-        rot_debounce_s: float = 0.0015,   # minimum time between valid quad steps
+        rot_debounce_s: float = 0.0005,   # minimum time between valid quad steps
     ):
         self.gpio = gpio
         self.clk = clk_pin
@@ -83,12 +83,15 @@ class KY040Input:
     def _emit_rotate(self, delta: int):
         if self.invert_direction:
             delta = -delta
+        print("DEBUG ROTATE", delta)
         self.q.put({"type": "ROTATE", "delta": delta})
 
     def _emit_short(self):
+        print("DEBUG SHORT")
         self.q.put({"type": "SHORT_CLICK"})
 
     def _emit_long(self):
+        print("DEBUG LONG")
         self.q.put({"type": "LONG_CLICK"})
 
     def _run(self):
