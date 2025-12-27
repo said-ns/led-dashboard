@@ -27,7 +27,7 @@ class KY040Input:
         pull_up=True,
         long_press_s: float = 0.60,
         debounce_s: float = 0.03,
-        poll_s: float = 0.001,
+        poll_s: float = 0.0005,
         invert_direction: bool = False,
     ):
         self.gpio = gpio
@@ -93,17 +93,40 @@ class KY040Input:
             now = time.monotonic()
 
             # ---------- ROTATION ----------
+            # ---- ROTATION (robust quadrature decoder) ----
+            # 2-bit state: (CLK<<1) | DT
+            TRANS = {
+                (0b00, 0b01): +1,
+                (0b01, 0b11): +1,
+                (0b11, 0b10): +1,
+                (0b10, 0b00): +1,
+
+                (0b00, 0b10): -1,
+                (0b10, 0b11): -1,
+                (0b11, 0b01): -1,
+                (0b01, 0b00): -1,
+            }
+
+            last_state = (g.input(self.clk) << 1) | g.input(self.dt)
+            accum = 0  # KY-040 often needs 4 transitions per detent
+
+            # inside your while loop:
             clk_state = g.input(self.clk)
-            dt_state = g.input(self.dt)
+            dt_state  = g.input(self.dt)
+            state = (clk_state << 1) | dt_state
 
-            # Detect rising edge on CLK
-            if clk_state != self._last_clk and clk_state == 1:
-                # Direction heuristic:
-                # Often: dt == 0 => CW, dt == 1 => CCW (may vary by wiring)
-                delta = +1 if dt_state == 0 else -1
-                self._emit_rotate(delta)
+            if state != last_state:
+                step = TRANS.get((last_state, state), 0)
+                last_state = state
+                if step:
+                    accum += step
+                    if accum >= 4:
+                        self._emit_rotate(+1)
+                        accum = 0
+                    elif accum <= -4:
+                        self._emit_rotate(-1)
+                        accum = 0
 
-            self._last_clk = clk_state
 
             # ---------- BUTTON (SHORT vs LONG) ----------
             sw_state = g.input(self.sw)
