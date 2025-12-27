@@ -1,6 +1,7 @@
 import time
 import queue
-import RPi.GPIO as GPIO
+from input.gpio_pigpio import PigpioGPIO
+GPIO = PigpioGPIO()
 
 from input import KY040Input
 from display import MatrixDisplay
