@@ -78,7 +78,7 @@ class StopwatchScreen(Screen):
             # Center on a 64x32 black frame
             frame = Image.new("RGB", (w, h), (0, 0, 0))
             X_OFFSET = 3     # + right, - left
-            Y_OFFSET = 4    # + down,  - up
+            Y_OFFSET = 10   # + down,  - up
 
             x = (w - new_w) // 2 + X_OFFSET
             y = (h - new_h) // 2 + Y_OFFSET
