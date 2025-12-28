@@ -42,7 +42,7 @@ def main():
 
     screens = [
         ClockScreen(FONT_PATH),
-        TextScreen(FONT_PATH, "Salaam!"),
+        TextScreen(FONT_PATH, "احْرِصْ عَلَى مَا يَنْفَعُكَ وَاسْتَعِنْ بِاللَّهِ!"),
         ImageScreen("/home/admin/led-dashboard/images/house.png")
     ]
     mgr = ScreenManager(screens)
