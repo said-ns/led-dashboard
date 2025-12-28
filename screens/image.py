@@ -22,7 +22,7 @@ class ImageScreen(Screen):
         self.index = 0
         self.invert = False  # optional effect
         self._cache = {}     # cache loaded/resized images
-
+        self.edit_mode = false
         # Optional text overlay (if you want)
         self.font = graphics.Font()
         # load a font only if you want overlay text:
@@ -44,18 +44,18 @@ class ImageScreen(Screen):
     def handle(self, event: dict) -> bool:
         et = event.get("type")
 
-        # SHORT_CLICK: next image
+        # Toggle edit mode
         if et == "SHORT_CLICK":
-            self.index = (self.index + 1) % len(self.image_paths)
+            self.edit_mode = not self.edit_mode
             return True
 
-        # LONG_CLICK: toggle invert (just an example action)
+        # Long click could invert, reset, etc.
         if et == "LONG_CLICK":
             self.invert = not self.invert
             return True
 
-        # Optional: rotate to switch images
-        if et == "ROTATE":
+        # Only consume ROTATE when in edit mode
+        if et == "ROTATE" and self.edit_mode:
             d = event.get("delta", 0)
             if d > 0:
                 self.index = (self.index + 1) % len(self.image_paths)
@@ -63,7 +63,9 @@ class ImageScreen(Screen):
                 self.index = (self.index - 1) % len(self.image_paths)
             return True
 
+        # Otherwise, do NOT handle rotate — let manager switch screens
         return False
+
 
     def draw(self, canvas):
         canvas.Clear()
