@@ -55,28 +55,36 @@ class StopwatchScreen(Screen):
         for i in range(8):
             p = images_dir / f"stopwatch{i}.png"
             if not p.exists():
-                raise FileNotFoundError(p)
+                raise FileNotFoundError(f"Missing animation frame: {p}")
 
-            img = Image.open(p)
+            src = Image.open(p).convert("RGBA")
 
-            # 1. Remove alpha, convert to grayscale
-            img = img.convert("L")
+            # Use alpha as mask -> white foreground on black background
+            alpha = src.split()[3]  # A channel
 
-            # 2. Increase contrast (important)
-            img = ImageOps.autocontrast(img)
+            # Make a white icon image the same size as src, masked by alpha
+            icon = Image.new("RGB", src.size, (0, 0, 0))
+            white = Image.new("RGB", src.size, (255, 255, 255))
+            icon.paste(white, (0, 0), alpha)
 
-            # 3. Convert to pure black/white
-            img = img.point(lambda x: 255 if x > 40 else 0)
+            # Scale up (nearest keeps pixel-art crisp)
+            # Choose a scale that fits inside 64x32 nicely
+            # Example: target height 28px
+            target_h = 28
+            scale = max(1, target_h // src.size[1])
+            new_w, new_h = src.size[0] * scale, src.size[1] * scale
+            icon = icon.resize((new_w, new_h), Image.NEAREST)
 
-            # 4. Convert to RGB (white on black)
-            img = img.convert("RGB")
+            # Center on a 64x32 black frame
+            frame = Image.new("RGB", (w, h), (0, 0, 0))
+            x = (w - new_w) // 2
+            y = (h - new_h) // 2
+            frame.paste(icon, (x, y))
 
-            if img.size != (w, h):
-                img = img.resize((w, h), Image.NEAREST)
-
-            frames.append(img)
+            frames.append(frame)
 
         return frames
+
 
 
     def _format_time(self, elapsed_s: float) -> str:
