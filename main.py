@@ -11,7 +11,7 @@ from screens import ClockScreen, TextScreen, ImageScreen, CountdownScreen
 
 def main():
     # -------- CONFIG YOU SHOULD EDIT --------
-    FONT_PATH = "/home/admin/rpi-rgb-led-matrix/fonts/6x10.bdf"
+    FONT_PATH = "/home/admin/rpi-rgb-led-matrix/fonts/5x7.bdf"
 
     # KY-040 pins (BCM numbering)
     # Change these to your wiring
