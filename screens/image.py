@@ -22,7 +22,7 @@ class ImageScreen(Screen):
         self.index = 0
         self.invert = False  # optional effect
         self._cache = {}     # cache loaded/resized images
-        self.edit_mode = false
+        self.edit_mode = False
         # Optional text overlay (if you want)
         self.font = graphics.Font()
         # load a font only if you want overlay text:
