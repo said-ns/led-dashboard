@@ -6,13 +6,13 @@ GPIO = PigpioGPIO()
 from input import KY040Input
 from display import MatrixDisplay
 from manager import ScreenManager
-from screens import ClockScreen, TextScreen, ImageScreen, CountdownScreen
+from screens import ClockScreen, TextScreen, ImageScreen, CountdownScreen, StopwatchScreen
 
 
 def main():
     # -------- CONFIG YOU SHOULD EDIT --------
     FONT_PATH = "/home/admin/rpi-rgb-led-matrix/fonts/5x7.bdf"
-
+    IMAGES_DIR = "/home/admin/led-dashboard/images"
     # KY-040 pins (BCM numbering)
     # Change these to your wiring
     CLK_PIN = 18
@@ -43,7 +43,8 @@ def main():
         ClockScreen(FONT_PATH),
         TextScreen(FONT_PATH, "Salaam!"),
         ImageScreen("/home/admin/led-dashboard/images/house.png"),
-        CountdownScreen(FONT_PATH)
+        CountdownScreen(FONT_PATH),
+        StopwatchScreen(FONT_PATH, IMAGES_DIR, width=64, height=32)
     ]
     mgr = ScreenManager(screens)
 
