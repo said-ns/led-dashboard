@@ -77,12 +77,16 @@ class StopwatchScreen(Screen):
 
             # Center on a 64x32 black frame
             frame = Image.new("RGB", (w, h), (0, 0, 0))
-            X_OFFSET = 2    # + → right, - → left
-            Y_OFFSET = 6    # + → down,  - → up
+            X_OFFSET = 3     # + right, - left
+            Y_OFFSET = 4    # + down,  - up
 
             x = (w - new_w) // 2 + X_OFFSET
             y = (h - new_h) // 2 + Y_OFFSET
-            frame.paste(icon, (x, y))
+
+            # Clamp so we don't cut off the icon
+            x = max(0, min(x, w - new_w))
+            y = max(0, min(y, h - new_h))
+
             frame.paste(icon, (x, y))
 
             frames.append(frame)
