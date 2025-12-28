@@ -6,8 +6,7 @@ GPIO = PigpioGPIO()
 from input import KY040Input
 from display import MatrixDisplay
 from manager import ScreenManager
-from screens import ClockScreen, TextScreen
-from screens import ImageScreen
+from screens import ClockScreen, TextScreen, ImageScreen, CountdownScreen
 
 
 def main():
@@ -42,8 +41,9 @@ def main():
 
     screens = [
         ClockScreen(FONT_PATH),
-        TextScreen(FONT_PATH, "احْرِصْ عَلَى مَا يَنْفَعُكَ وَاسْتَعِنْ بِاللَّهِ!"),
-        ImageScreen("/home/admin/led-dashboard/images/house.png")
+        TextScreen(FONT_PATH, "Salaam!"),
+        ImageScreen("/home/admin/led-dashboard/images/house.png"),
+        CountdownScreen(FONT_PATH)
     ]
     mgr = ScreenManager(screens)
 
