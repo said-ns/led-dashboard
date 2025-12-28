@@ -44,7 +44,7 @@ def main():
         TextScreen(FONT_PATH, "Salaam!"),
         ImageScreen("/home/admin/led-dashboard/images/house.png"),
         CountdownScreen(FONT_PATH),
-        StopwatchScreen(FONT_PATH, IMAGES_DIR, width=64, height=32)
+        StopwatchScreen(FONT_PATH, IMAGES_DIR, width=25, height=25)
     ]
     mgr = ScreenManager(screens)
 
