@@ -70,23 +70,15 @@ class StopwatchScreen(Screen):
             # Scale up (nearest keeps pixel-art crisp)
             # Choose a scale that fits inside 64x32 nicely
             # Example: target height 28px
-            target_h = 28
+            target_h = 25
             scale = max(1, target_h // src.size[1])
             new_w, new_h = src.size[0] * scale, src.size[1] * scale
             icon = icon.resize((new_w, new_h), Image.NEAREST)
 
             # Center on a 64x32 black frame
             frame = Image.new("RGB", (w, h), (0, 0, 0))
-            X_OFFSET = 3     # + right, - left
-            Y_OFFSET = 10   # + down,  - up
-
-            x = (w - new_w) // 2 + X_OFFSET
-            y = (h - new_h) // 2 + Y_OFFSET
-
-            # Clamp so we don't cut off the icon
-            x = max(0, min(x, w - new_w))
-            y = max(0, min(y, h - new_h))
-
+            x = (w - new_w) // 2
+            y = (h - new_h) // 2
             frame.paste(icon, (x, y))
 
             frames.append(frame)
