@@ -7,6 +7,7 @@ from input import KY040Input
 from display import MatrixDisplay
 from manager import ScreenManager
 from screens import ClockScreen, TextScreen
+from screens import ImageScreen
 
 
 def main():
@@ -42,6 +43,7 @@ def main():
     screens = [
         ClockScreen(FONT_PATH),
         TextScreen(FONT_PATH, "Salaam!"),
+        image_screen = ImageScreen("/home/admin/images/house.png")
     ]
     mgr = ScreenManager(screens)
 
