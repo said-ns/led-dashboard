@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from PIL import Image
 from rgbmatrix import graphics
-
+from PIL import Image, ImageOps
 from .base import Screen
 
 
@@ -55,12 +55,29 @@ class StopwatchScreen(Screen):
         for i in range(8):
             p = images_dir / f"stopwatch{i}.png"
             if not p.exists():
-                raise FileNotFoundError(f"Missing animation frame: {p}")
-            img = Image.open(p).convert("RGB")
+                raise FileNotFoundError(p)
+
+            img = Image.open(p)
+
+            # 1. Remove alpha, convert to grayscale
+            img = img.convert("L")
+
+            # 2. Increase contrast (important)
+            img = ImageOps.autocontrast(img)
+
+            # 3. Convert to pure black/white
+            img = img.point(lambda x: 255 if x > 40 else 0)
+
+            # 4. Convert to RGB (white on black)
+            img = img.convert("RGB")
+
             if img.size != (w, h):
                 img = img.resize((w, h), Image.NEAREST)
+
             frames.append(img)
+
         return frames
+
 
     def _format_time(self, elapsed_s: float) -> str:
         total_ms = int(elapsed_s * 1000.0)
